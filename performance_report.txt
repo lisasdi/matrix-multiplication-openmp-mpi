@@ -1,0 +1,50 @@
+============================================================
+MATRIX-MATRIX MULTIPLICATION PERFORMANCE REPORT
+Matrix size: 2000 × 2000
+============================================================
+
+SUMMARY STATISTICS:
+------------------------------------------------------------
+Sequential                | Time: 53902.20 ms | GFLOPS:     0.30 | Throughput:   0.00 GB/s
+OpenMP_1T                 | Time: 74568.60 ms | GFLOPS:     0.21 | Throughput:   0.00 GB/s
+OpenMP_2T                 | Time: 41240.60 ms | GFLOPS:     0.39 | Throughput:   0.00 GB/s
+OpenMP_3T                 | Time: 29685.90 ms | GFLOPS:     0.54 | Throughput:   0.00 GB/s
+OpenMP_4T                 | Time: 26680.60 ms | GFLOPS:     0.60 | Throughput:   0.00 GB/s
+OpenMP_5T                 | Time: 25845.70 ms | GFLOPS:     0.62 | Throughput:   0.00 GB/s
+OpenMP_6T                 | Time: 24029.40 ms | GFLOPS:     0.67 | Throughput:   0.00 GB/s
+OpenMP_7T                 | Time: 25364.70 ms | GFLOPS:     0.63 | Throughput:   0.00 GB/s
+OpenMP_8T                 | Time: 27079.50 ms | GFLOPS:     0.59 | Throughput:   0.00 GB/s
+
+============================================================
+SPEEDUP ANALYSIS (vs Sequential)
+------------------------------------------------------------
+Sequential baseline: 53902.20 ms
+
+OpenMP_1T                 | Speedup: 0.72x
+OpenMP_2T                 | Speedup: 1.31x
+OpenMP_3T                 | Speedup: 1.82x
+OpenMP_4T                 | Speedup: 2.02x
+OpenMP_5T                 | Speedup: 2.09x
+OpenMP_6T                 | Speedup: 2.24x
+OpenMP_7T                 | Speedup: 2.13x
+OpenMP_8T                 | Speedup: 1.99x
+
+============================================================
+ANALYSIS & INSIGHTS
+------------------------------------------------------------
+
+1. Best execution time: OpenMP_6T
+2. Best GFLOPS performance: OpenMP_6T
+3. Best speedup: OpenMP_6T (2.24x)
+
+4. OpenMP Scaling Analysis:
+   - Best performance with 6 threads
+   - Improvement: 50539.20 ms (67.8%)
+
+============================================================
+RECOMMENDATIONS
+------------------------------------------------------------
+1. For maximum performance, use the hybrid approach
+2. Balance MPI ranks and OpenMP threads based on system resources
+3. Monitor NUMA effects on multi-socket systems
+4. Use proper work scheduling (dynamic, guided) for better load balancing
