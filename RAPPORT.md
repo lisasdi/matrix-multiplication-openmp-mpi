@@ -2,9 +2,9 @@
 
 ## 1. Introduction
 
-Ce projet a consisté à implémenter la multiplication de deux matrices carrées (2000 x 2000 éléments) en utilisant différentes approches de parallélisation. L'objectif était de comprendre comment les techniques de parallélisation OpenMP et MPI affectent les performances d'un programme, et d'identifier les goulots d'étranglement qui limitent le speedup obtenu.
+Ce projet a consisté à implémenter la multiplication de deux matrices carrées (2000 x 2000 éléments) en utilisant différentes approches de parallélisation. L'objectif était de comprendre comment les techniques de parallélisation OpenMP et MPI affectent les performances d'un programme, et de repérer et comprendre les éléments du programme qui empêchent d’obtenir une accélération (speedup) plus importante.
 
-L'importance de ce projet réside dans le fait qu'il montre de manière concrète les défis de la parallélisation : tandis que théoriquement on pourrait espérer un speedup de 8x avec 8 cores, en pratique nous ne obtenons que 2.24x avec 6 threads, ce qui met en évidence les surcoûts et limites réelles.
+L'importance de ce projet réside dans le fait qu'il montre de manière concrète les défis de la parallélisation.
 
 ---
 
@@ -87,10 +87,10 @@ Cette approche minimise la communication puisque B n'est diffusé qu'une seule f
 
 Le projet contient quatre versions du code :
 
-1. **01_sequential.cpp** (~100 lignes) : Version baseline sans parallélisme
-2. **02_openmp.cpp** (~120 lignes) : Version OpenMP testant automatiquement 1-8 threads
-3. **03_mpi.cpp** (~150 lignes) : Version MPI avec distribution par lignes
-4. **04_hybrid.cpp** (~170 lignes) : Combinaison OpenMP+MPI (non testé en raison des limitations de RAM)
+1. **01_sequential.cpp** : Version baseline sans parallélisme
+2. **02_openmp.cpp**  : Version OpenMP testant automatiquement 1-8 threads
+3. **03_mpi.cpp**  : Version MPI avec distribution par lignes
+4. **04_hybrid.cpp**  : Combinaison OpenMP+MPI (non testé en raison des limitations de RAM)
 
 ### Technologie Utilisées
 
@@ -212,7 +212,7 @@ Exécuter sur WSL au lieu de Linux natif ajoute environ 10-20% de surcoût par r
 
 **4. RAM Limitée**
 
-Avec seulement 8 GB de RAM, le système doit utiliser swap pour certaines opérations, ce qui ralentit considérablement les calculs. C'est pourquoi nous n'avons pas pu tester des matrices plus grandes.
+Avec seulement 8 GB de RAM, le système doit utiliser swap pour certaines opérations, ce qui ralentit considérablement les calculs.
 
 ### Pourquoi le Speedup Diminue Après 6 Threads ?
 
@@ -294,19 +294,6 @@ Avec 8 GB de RAM, nous avons choisi des matrices 2000x2000. Raisons :
 - Tailles plus petites (1000x1000) : Problèmes similaires, résultats moins clairs
 - Tailles plus grandes (3000x3000) : Causeraient un crash par manque de mémoire
 - 2000x2000 = point d'équilibre
-
-Si nous avions davantage de RAM (par exemple 32 GB), nous pourrions utiliser 4000x4000, ce qui montrerait probablement un meilleur speedup en raison de moins de contention mémoire par rapport à la charge de calcul.
-
-### Pas de Version MPI Testée
-
-Nous n'avons pas testé la version MPI ni la version hybride faute de temps. Les 2-3 heures d'exécution pour OpenMP étaient déjà significatives.
-
-### WSL vs Linux Natif
-
-Les performances observées sont limitées par WSL. Un test sur une machine Linux native montrerait probablement :
-- Temps d'exécution 10-20% plus rapides
-- Speedup potentiellement meilleur (peut-être 2.4-2.5x)
-- Comportement plus reproductible
 
 ---
 
