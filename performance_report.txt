@@ -14,6 +14,10 @@ OpenMP_5T                 | Time: 25845.70 ms | GFLOPS:     0.62 | Throughput:  
 OpenMP_6T                 | Time: 24029.40 ms | GFLOPS:     0.67 | Throughput:   0.00 GB/s
 OpenMP_7T                 | Time: 25364.70 ms | GFLOPS:     0.63 | Throughput:   0.00 GB/s
 OpenMP_8T                 | Time: 27079.50 ms | GFLOPS:     0.59 | Throughput:   0.00 GB/s
+MPI_2R                    | Time: 29548.20 ms | GFLOPS:     0.54 | Throughput:   0.00 GB/s
+MPI_4R                    | Time: 21412.80 ms | GFLOPS:     0.75 | Throughput:   0.00 GB/s
+Hybrid_2R_1T              | Time: 30514.40 ms | GFLOPS:     0.52 | Throughput:   0.00 GB/s
+Hybrid_2R_2T              | Time: 21098.30 ms | GFLOPS:     0.76 | Throughput:   0.00 GB/s
 
 ============================================================
 SPEEDUP ANALYSIS (vs Sequential)
@@ -28,14 +32,18 @@ OpenMP_5T                 | Speedup: 2.09x
 OpenMP_6T                 | Speedup: 2.24x
 OpenMP_7T                 | Speedup: 2.13x
 OpenMP_8T                 | Speedup: 1.99x
+MPI_2R                    | Speedup: 1.82x
+MPI_4R                    | Speedup: 2.52x
+Hybrid_2R_1T              | Speedup: 1.77x
+Hybrid_2R_2T              | Speedup: 2.55x
 
 ============================================================
 ANALYSIS & INSIGHTS
 ------------------------------------------------------------
 
-1. Best execution time: OpenMP_6T
-2. Best GFLOPS performance: OpenMP_6T
-3. Best speedup: OpenMP_6T (2.24x)
+1. Best execution time: Hybrid_2R_2T
+2. Best GFLOPS performance: Hybrid_2R_2T
+3. Best speedup: Hybrid_2R_2T (2.55x)
 
 4. OpenMP Scaling Analysis:
    - Best performance with 6 threads

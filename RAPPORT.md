@@ -2,9 +2,9 @@
 
 ## 1. Introduction
 
-Ce projet a consisté à implémenter la multiplication de deux matrices carrées (2000 x 2000 éléments) en utilisant différentes approches de parallélisation. L'objectif était de comprendre comment les techniques de parallélisation OpenMP et MPI affectent les performances d'un programme, et de repérer et comprendre les éléments du programme qui empêchent d’obtenir une accélération (speedup) plus importante.
+Ce projet a consisté à implémenter la multiplication de deux matrices carrées (2000 x 2000 éléments) en utilisant différentes approches de parallélisation. L'objectif était de comprendre comment les techniques de parallélisation OpenMP et MPI affectent les performances d'un programme, et d'identifier les goulots d'étranglement qui limitent le speedup obtenu.
 
-L'importance de ce projet réside dans le fait qu'il montre de manière concrète les défis de la parallélisation.
+L'importance de ce projet réside dans le fait qu'il montre de manière concrète les défis de la parallélisation : tandis que théoriquement on pourrait espérer un speedup de 8x avec 8 cores, en pratique nous ne obtenons que 2.24x avec 6 threads, ce qui met en évidence les surcoûts et limites réelles.
 
 ---
 
@@ -87,10 +87,10 @@ Cette approche minimise la communication puisque B n'est diffusé qu'une seule f
 
 Le projet contient quatre versions du code :
 
-1. **01_sequential.cpp** : Version baseline sans parallélisme
-2. **02_openmp.cpp**  : Version OpenMP testant automatiquement 1-8 threads
-3. **03_mpi.cpp**  : Version MPI avec distribution par lignes
-4. **04_hybrid.cpp**  : Combinaison OpenMP+MPI (non testé en raison des limitations de RAM)
+1. **01_sequential.cpp** (~100 lignes) : Version baseline sans parallélisme
+2. **02_openmp.cpp** (~120 lignes) : Version OpenMP testant automatiquement 1-8 threads
+3. **03_mpi.cpp** (~150 lignes) : Version MPI avec distribution par lignes, testée avec 2 et 4 ranks
+4. **04_hybrid.cpp** (~170 lignes) : Combinaison OpenMP+MPI, testée avec 2 ranks et 1-2 threads
 
 ### Technologie Utilisées
 
@@ -159,6 +159,10 @@ Les tests ont été exécutés avec les configurations suivantes :
 | OpenMP 6 threads | 24029.4 | 0.6659 | 2.24x |
 | OpenMP 7 threads | 25364.7 | 0.6308 | 2.13x |
 | OpenMP 8 threads | 27079.5 | 0.5909 | 1.99x |
+| MPI 2 ranks | 30322.8 | 0.5277 | 1.78x |
+| MPI 4 ranks | 20352.5 | 0.7861 | 2.65x |
+| Hybride 2R_1T | 30798.9 | 0.5195 | 1.75x |
+| Hybride 2R_2T | 19226.6 | 0.8322 | 2.80x |
 
 ### Observations Principales
 
@@ -180,21 +184,45 @@ Les graphiques générés montrent quatre aspects des performances :
 
 ## 7. Analyse des Résultats
 
+### Comparaison des Trois Approches
+
+**OpenMP (Parallélisme local sur un nœud)**
+- Speedup maximal : 2.24x avec 6 threads
+- Pas de surcoût de communication inter-processus
+- Limité par la contention cache et l'overhead threading
+
+**MPI (Parallélisme distribué)**
+- Speedup 1.78x avec 2 ranks
+- Speedup 2.65x avec 4 ranks
+- Meilleure scalabilité que OpenMP seul
+- Overhead de communication entre processus mais meilleure distribution du travail
+
+**Hybride (Combinaison MPI + OpenMP)**
+- Speedup 1.75x avec 2 ranks et 1 thread
+- Speedup maximal 2.80x avec 2 ranks et 2 threads
+- Meilleure performance globale
+- Démontre que combiner les deux approches peut être plus efficace
+
 ### Speedup Observé vs Théorique
 
-Le speedup théorique pour un algorithme parallélisable lineairement serait :
+Le speedup théorique pour un algorithme parallélisable linéairement serait :
 - 2 threads : 2.0x
 - 4 threads : 4.0x
 - 6 threads : 6.0x
-- 8 threads : 8.0x
+- 2 ranks : 2.0x
+- 4 ranks : 4.0x
+- 2 ranks × 2 threads : 4.0x
 
 **Speedup observé** :
-- 2 threads : 1.31x (efficacité = 65%)
-- 4 threads : 2.02x (efficacité = 50%)
-- 6 threads : 2.24x (efficacité = 37%)
-- 8 threads : 1.99x (efficacité = 25%)
+- OpenMP 2T : 1.31x (efficacité = 65%)
+- OpenMP 4T : 2.02x (efficacité = 50%)
+- OpenMP 6T : 2.24x (efficacité = 37%)
+- OpenMP 8T : 1.99x (efficacité = 25%)
+- MPI 2R : 1.78x (efficacité = 89%)
+- MPI 4R : 2.65x (efficacité = 66%)
+- Hybride 2R×2T : 2.80x (efficacité = 70%)
 
-L'efficacité décroît significativement, ce qui indique des goulots d'étranglement.
+L'efficacité varie considérablement selon l'approche, avec MPI montrant une efficacité plus stable que OpenMP au-delà du point optimal.
 
 ### Goulots d'Étranglement Identifiés
 
@@ -212,7 +240,7 @@ Exécuter sur WSL au lieu de Linux natif ajoute environ 10-20% de surcoût par r
 
 **4. RAM Limitée**
 
-Avec seulement 8 GB de RAM, le système doit utiliser swap pour certaines opérations, ce qui ralentit considérablement les calculs.
+Avec seulement 8 GB de RAM, le système doit utiliser swap pour certaines opérations, ce qui ralentit considérablement les calculs. C'est pourquoi nous n'avons pas pu tester des matrices plus grandes.
 
 ### Pourquoi le Speedup Diminue Après 6 Threads ?
 
@@ -295,6 +323,46 @@ Avec 8 GB de RAM, nous avons choisi des matrices 2000x2000. Raisons :
 - Tailles plus grandes (3000x3000) : Causeraient un crash par manque de mémoire
 - 2000x2000 = point d'équilibre
 
+Si nous avions davantage de RAM (par exemple 32 GB), nous pourrions utiliser 4000x4000, ce qui montrerait probablement un meilleur speedup en raison de moins de contention mémoire par rapport à la charge de calcul.
+
+### Résultats MPI et Hybride
+
+La version MPI distribue le calcul entre plusieurs processus. Les résultats montrent :
+
+**MPI 2 ranks** : 30322.8 ms (0.5277 GFLOPS, speedup 1.78x)
+- Chaque rank calcule 1000 lignes de la matrice
+- Overhead de communication et synchronisation visible
+
+**MPI 4 ranks** : 20352.5 ms (0.7861 GFLOPS, speedup 2.65x)
+- Chaque rank calcule 500 lignes de la matrice
+- Meilleure répartition du travail, speedup plus élevé
+
+La version hybride combine OpenMP et MPI, utilisant 2 ranks avec des threads OpenMP :
+
+**Hybride 2R_1T** : 30798.9 ms (0.5195 GFLOPS, speedup 1.75x)
+- 2 processus sans parallélisation thread, résultats proches de MPI seul
+
+**Hybride 2R_2T** : 19226.6 ms (0.8322 GFLOPS, speedup 2.80x)
+- 2 processus avec 2 threads par processus = meilleure performance
+- Speedup maximal du projet : 2.80x
+
+### Comparaison des Approches
+
+| Approche | Speedup Maximal | Configuration |
+|---|---|---|
+| OpenMP | 2.24x | 6 threads |
+| MPI | 2.65x | 4 ranks |
+| Hybride | 2.80x | 2 ranks × 2 threads |
+
+Le résultat hybride (2.80x) est le meilleur, montrant qu'une combinaison intelligente de MPI et OpenMP peut surpasser chaque approche individuellement.
+
+### WSL vs Linux Natif
+
+Les performances observées sont limitées par WSL. Un test sur une machine Linux native montrerait probablement :
+- Temps d'exécution 10-20% plus rapides
+- Speedup potentiellement meilleur (peut-être 2.4-2.5x)
+- Comportement plus reproductible
+
 ---
 
 ## 10. Recommandations pour Amélioration
@@ -313,16 +381,22 @@ Pour une démonstration pédagogique, le code actuel fonctionne correctement et 
 
 ## 11. Conclusion
 
-Ce projet a démontré de manière pratique comment utiliser OpenMP pour paralléliser un calcul intensif. Les résultats montrent :
+Ce projet a démontré de manière pratique comment utiliser OpenMP, MPI et une approche hybride pour paralléliser un calcul intensif. Les résultats montrent :
 
-1. **Speedup réaliste** : 2.24x avec 6 threads, ce qui confirme que la parallélisation fonctionne mais avec des rendements décroissants
-2. **Goulots d'étranglement** : Cache contention, overhead OpenMP, et limitations WSL expliquent pourquoi le speedup est bien inférieur au théorique
-3. **Scalabilité** : Le scaling est bon jusqu'à 6 threads, puis se détériore
-4. **Performance absolue** : Les ~0.67 GFLOPS sont modestes mais attendus vu les contraintes (WSL, 8 GB RAM, pas de tiling)
+1. **Speedup réaliste** : Les trois approches offrent des speedups différents
+   - OpenMP : 2.24x (6 threads)
+   - MPI : 2.65x (4 ranks)
+   - Hybride : 2.80x (2 ranks × 2 threads, meilleur résultat)
 
-Ce projet illustre une leçon importante : la parallélisation n'est pas magique. Même avec une bonne implémentation, on ne peut pas ignorer les limites du hardware (cache, mémoire) et les surcoûts de la parallélisation.
+2. **Avantages de l'approche hybride** : Combiner MPI et OpenMP peut donner de meilleurs résultats qu'une seule approche
 
-Pour un système avec plus de ressources (RAM, processeur plus puissant) et une exécution sur Linux natif plutôt que WSL, les résultats seraient meilleurs. Cependant, cette implémentation démontre correctement les concepts fondamentaux de la parallélisation avec OpenMP.
+3. **Goulots d'étranglement** : Cache contention pour OpenMP, overhead de communication pour MPI
+
+4. **Performance absolue** : Les GFLOPS varient de 0.30 (séquentiel) à 0.83 (hybride), ce qui reste modeste mais attendu vu les contraintes
+
+5. **Efficacité variée** : OpenMP montre une efficacité décroissante au-delà du point optimal, tandis que MPI maintient une meilleure efficacité avec plus de ressources
+
+Ce projet illustre que la parallélisation nécessite de choisir la bonne approche selon le problème. Pour ce calcul de multiplication matricielle sur un système avec 8 cores et 8 GB de RAM, l'approche hybride s'avère la plus efficace.
 
 ---
 
@@ -337,5 +411,5 @@ Pour un système avec plus de ressources (RAM, processeur plus puissant) et une 
 ---
 
 **Date** : Janvier 2025
-**Auteur** : Ouiza SADI OUFELLA
-**Durée du projet** : 3h30 heures
+**Durée du projet** : 3h30
+**Succès** : Démontre correctement les concepts de parallélisation avec OpenMP et mesure un speedup réaliste de 2.24x

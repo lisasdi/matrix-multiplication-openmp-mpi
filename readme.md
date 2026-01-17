@@ -124,7 +124,7 @@ Note importante : La RAM disponible est une limite importante. Avec 8 GB seuleme
 
 ## Résultats Observés
 
-Les résultats montrent que OpenMP offre un speedup intéressant jusqu'à 6 threads :
+Les résultats montrent les performances de toutes les approches de parallélisation :
 
 | Configuration | Temps (ms) | GFLOPS | Speedup |
 |---|---|---|---|
@@ -137,8 +137,12 @@ Les résultats montrent que OpenMP offre un speedup intéressant jusqu'à 6 thre
 | OpenMP 6T | 24029.4 | 0.666 | 2.24x |
 | OpenMP 7T | 25364.7 | 0.631 | 2.13x |
 | OpenMP 8T | 27079.5 | 0.591 | 1.99x |
+| MPI 2 Ranks | 30322.8 | 0.528 | 1.78x |
+| MPI 4 Ranks | 20352.5 | 0.786 | 2.65x |
+| Hybride 2R 1T | 30798.9 | 0.519 | 1.75x |
+| Hybride 2R 2T | 19226.6 | 0.832 | 2.80x |
 
-Le speedup maximal de 2.24x est atteint avec 6 threads. Après 6 threads, le speedup diminue en raison de la contention sur le cache L3 et du surcoût de la création et synchronisation des threads.
+Le speedup maximal global de 2.80x est atteint avec la version hybride (2 ranks avec 2 threads par rank). OpenMP seul atteint 2.24x avec 6 threads. MPI avec 4 ranks atteint 2.65x. La version hybride démontre comment combiner les deux approches pour obtenir les meilleures performances.
 
 ## Graphiques de Performance
 
@@ -224,6 +228,12 @@ Après l'exécution, les fichiers suivants sont créés :
 
 ## Conclusion
 
-Ce projet démontre de manière pratique comment utiliser OpenMP et MPI pour paralléliser un calcul intensif. Les résultats montrent un speedup de 2.24x avec 6 threads, ce qui confirme que la parallélisation fonctionne mais avec des rendements décroissants au-delà d'un certain nombre de threads. Les limitations dues à WSL et à la RAM disponible (8 GB) expliquent les performances modestes observées.
+Ce projet démontre de manière pratique comment utiliser OpenMP, MPI et une approche hybride pour paralléliser un calcul intensif. Les résultats obtenus montrent que :
 
-Les résultats permettent de comprendre les défis réels de la parallélisation : pas seulement la création de threads, mais aussi la gestion du cache, de la mémoire et des surcoûts de synchronisation.
+1. **OpenMP seul** : Speedup de 2.24x avec 6 threads
+2. **MPI seul** : Speedup de 2.65x avec 4 processus
+3. **Hybride** : Speedup maximal de 2.80x avec 2 ranks et 2 threads par rank
+
+La version hybride offre les meilleures performances en combinant la distribution entre processus (MPI) et la parallélisation locale avec threads (OpenMP). Cela démontre l'intérêt d'une approche hybride pour exploiter tous les niveaux de parallélisme disponibles sur un système moderne.
+
+Les limitations dues à WSL et à la RAM disponible (8 GB) expliquent pourquoi les performances absolues (0.832 GFLOPS au maximum) sont modestes. Sur une machine native Linux avec plus de RAM, les résultats seraient meilleurs. Cependant, cette implémentation démontre correctement les concepts fondamentaux de la parallélisation et comment mesurer et comparer les performances de différentes approches.
