@@ -1,0 +1,24 @@
+# Exécutables compilés
+seq
+omp
+mpi
+hybrid
+
+# Fichiers objet C++
+*.o
+*.so
+*.a
+*.out
+
+# Fichiers temporaires
+*.swp
+*.tmp
+*~
+*.bak
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
