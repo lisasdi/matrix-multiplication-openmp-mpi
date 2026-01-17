@@ -410,6 +410,6 @@ Ce projet illustre que la parallélisation nécessite de choisir la bonne approc
 
 ---
 
-**Date** : Janvier 2025
+**Date** : Janvier 2026
 **Durée du projet** : 3h30
 **Succès** : Démontre correctement les concepts de parallélisation avec OpenMP et mesure un speedup réaliste de 2.24x
